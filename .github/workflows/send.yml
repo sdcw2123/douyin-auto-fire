@@ -7,10 +7,10 @@ on:
         description: Only verify login and friends without sending
         type: boolean
         default: false
-  # 使用 GitHub Actions 的日程时把下面三行注释删掉；用外部 cron 不用管
-  # schedule:
-  #   - cron: "0 0 * * *"
-  #     timezone: "Asia/Shanghai"
+  # 北京时间每天 11:00（UTC 03:00）；外部 cron 可删除本段
+  schedule:
+    - cron: "0 3 * * *"
+      timezone: "Asia/Shanghai"
 
 concurrency:
   group: douyin-daily-sender
@@ -124,3 +124,4 @@ jobs:
           name: douyin-failure-${{ github.run_id }}
           path: artifacts/
           retention-days: 3
+
