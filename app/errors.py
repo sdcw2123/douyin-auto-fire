@@ -72,9 +72,11 @@ def classify_error(exc: Exception) -> ErrorCategory:
     error_msg = str(exc).lower()
 
     # 好友不存在 - 永久性错误
+    # 注意：“搜索不到”不算永久错误。冷启动时抖音搜索索引预热慢，
+    # 前几个目标可能暂时搜不到，属于可重试的临时性错误。
     if any(keyword in error_msg for keyword in [
-        "找不到", "不存在", "搜索不到", "未找到",
-        "not found", "does not exist"
+        "不存在", "未找到",
+        "does not exist"
     ]):
         return ErrorCategory.PERMANENT
 
