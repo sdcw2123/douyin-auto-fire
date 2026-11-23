@@ -45,9 +45,23 @@ class DouyinChat:
         await search.click()
         await search.fill("")
         await search.fill(name)
-        await self.page.wait_for_timeout(1_500)
 
-        result = await self._search_result(name)
+        # 冷启动时抖音搜索索引尚未预热，前几秒会返回“未搜索到相关内容”。
+        # 固定等 1.5 秒不够：在 timeout 预算内轮询搜索结果，出现即点击。
+        deadline = asyncio.get_running_loop().time() + self.timeout_ms / 1000
+        result = None
+        while True:
+            await self.page.wait_for_timeout(500)
+            result = await self._search_result(name)
+            if result is not None:
+                break
+            if asyncio.get_running_loop().time() >= deadline:
+                # 索引偶尔卡在空结果：清空重输一次关键词再给最后一轮等待。
+                await search.fill("")
+                await search.fill(name)
+                await self.page.wait_for_timeout(2_000)
+                result = await self._search_result(name)
+                break
         if result is None:
             raise PageOperationError("搜索不到目标好友")
         await result.click(force=True)
